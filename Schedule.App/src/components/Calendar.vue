@@ -1,6 +1,16 @@
 <template>
     <div class="Calendar">
-        <div class="Calendar-Header">{{ computedYear }}</div>
+        <div class="Calendar-Header">
+            <div class="Calendar-CurrentYear">
+                {{ computedYear }}
+            </div>
+            <router-link v-if="computedYear - 1 >= 1927" :to="`/schedule/${computedYear - 1}`">
+                <font-awesome-icon class="Calendar-PrevYear" icon="arrow-circle-left" title="Previous year" />
+            </router-link>
+            <router-link v-if="computedYear + 1 <= 9999" :to="`/schedule/${computedYear + 1}`">
+                <font-awesome-icon class="Calendar-NextYear" icon="arrow-circle-right" title="Next year" />
+            </router-link>
+        </div>
         <div class="Calendar-Months">
             <div
                 v-for="month in [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12]"
@@ -9,7 +19,7 @@
             >
                 <div class="Calendar-MonthTitle">{{ formatMonth(month) }}</div>
                 <ul class="Calendar-Games">
-                    <li v-for="game in computedGames(month)" :key="game.id">
+                    <li v-for="game in getGamesByMonth(month)" :key="game.id">
                         <router-link :to="`/game/${game.id}`">
                             {{ game.name }}
                         </router-link>
@@ -21,19 +31,25 @@
 </template>
 
 <script lang="ts">
-import { Component, Vue } from "vue-property-decorator";
+import axios from "axios";
 import moment from "moment";
+import { Component, Vue } from "vue-property-decorator";
 import { IGame } from "@/types";
+
+const getCurrentYear = () => new Date().getFullYear();
 
 @Component
 export default class Calendar extends Vue {
+    private games: IGame[] = [];
+
     get computedYear(): number {
-        return this.$store.state.schedule.year;
+        const { year } = this.$route.params;
+        return year ? parseInt(year) : getCurrentYear();
     }
 
-    computedGames(month: number): IGame[] {
-        const year = this.$store.state.schedule.year;
-        return this.$store.state.schedule.games.filter((g: IGame) => g.month === month && g.year === year);
+    getGamesByMonth(month: number): IGame[] {
+        const year = this.computedYear;
+        return this.games.filter((g: IGame) => g.month === month && g.year === year);
     }
 
     formatMonth(month: number): string {
@@ -41,16 +57,32 @@ export default class Calendar extends Vue {
             .utc(new Date(0, month, 1))
             .format("MMMM");
     }
+
+    mounted() {
+        axios.get(`/api/schedule/year/${this.computedYear}`)
+            .then((response) => {
+                this.games = response.data;
+            })
+            .catch((error) => {
+                // TODO: handle error
+            });
+    }
 }
 </script>
 
 <style scoped lang="scss">
 .Calendar {
     &-Header {
+        display: flex;
+        align-items: center;
         padding: 3px 0 23px;
         font-size: 1.8em;
         font-weight: bolder;
         text-transform: uppercase;
+    }
+
+    &-CurrentYear {
+        margin-right: 20px;
     }
 
     &-Months {

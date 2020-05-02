@@ -9,7 +9,6 @@ export const SET_GAME_DESCRIPTION = `${moduleName}/SET_GAME_DESCRIPTION`;
 
 const module: Module<IScheduleState, IRootState> = {
     state: {
-        year: 2020,
         games: [],
         gameDescription: null,
     },
@@ -19,11 +18,11 @@ const module: Module<IScheduleState, IRootState> = {
         },
         [SET_GAME_DESCRIPTION](state, gameDescription: IGameDescription) {
             state.gameDescription = gameDescription;
-        }
+        },
     },
     actions: {
-        [FETCH_GAME_DESCRIPTION]() {}
-    }
+        [FETCH_GAME_DESCRIPTION]() {},
+    },
 };
 
 export default module;
