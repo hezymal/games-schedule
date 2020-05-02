@@ -12,7 +12,12 @@ const routes = [
 		component: Schedule
 	},
 	{
-		path: '/game/:id?',
+		path: '/schedule/:year',
+		name: 'home',
+		component: Schedule
+	},
+	{
+		path: '/game/:id',
 		name: 'game',
 		component: Game
 	},
